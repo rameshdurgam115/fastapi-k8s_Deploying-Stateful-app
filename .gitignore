@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+venv/
+*.py[cod]
+*.sqlite3
+
+# VS Code
+.vscode/
+
+# Kubernetes/YAML editors
+*.swp
+
+# Docker
+docker-desktop-data/
+
+# OS
+.DS_Store
+Thumbs.db
