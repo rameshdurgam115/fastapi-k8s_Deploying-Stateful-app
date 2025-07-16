@@ -1,73 +1,76 @@
-# 🚀 Kubernetes FastAPI Labs
+# 🐍🚀 fastapi-k8s-stateful
 
-Two hands-on labs to master how to containerize FastAPI apps and run them on a local Kubernetes cluster powered by Minikube.
+[![Python](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/)  
+[![FastAPI](https://img.shields.io/badge/FastAPI-⚡️-green)](https://fastapi.tiangolo.com/)  
+[![Docker](https://img.shields.io/badge/docker-📦-blue)](https://www.docker.com/)  
+[![Kubernetes](https://img.shields.io/badge/kubernetes-☸️-blue)](https://kubernetes.io/)  
+[![Minikube](https://img.shields.io/badge/minikube-🔧-yellow)](https://minikube.sigs.k8s.io/)
 
-- **Lab 1:** Deploy & manage a **stateless** FastAPI web-service  
-- **Lab 2:** Deploy & manage a **stateful** FastAPI service with persistent storage
+> Hands-on guide to deploy a **stateful** FastAPI service with **persistent storage** on a local Kubernetes cluster (Minikube).
 
 ---
 
-## 📋 Table of Contents
+## 📚 Table of Contents
 
-1. [Demo Preview](#demo-preview)  
-2. [Prerequisites](#prerequisites)  
-3. [Quick Start](#quick-start)  
-4. [Lab 1: Stateless FastAPI App](#lab-1-stateless-fastapi-app)  
-   - 4.1 [Create & Test Locally](#41-create--test-locally)  
-   - 4.2 [Dockerize](#42-dockerize)  
-   - 4.3 [Run in Minikube](#43-run-in-minikube)  
-   - 4.4 [Kubernetes Deployment & Service](#44-kubernetes-deployment--service)  
-   - 4.5 [Scale & Monitor](#45-scale--monitor)  
+1. [Demo Preview](#-demo-preview)  
+2. [Prerequisites](#-prerequisites)  
+3. [Quick Start](#-quick-start)  
+4. [Step-by-Step Guide](#-step%E2%80%91by%E2%80%91step-guide)  
+   - 4.1 [Create & Test Your FastAPI App](#41-create--test-your-fastapi-app)  
+   - 4.2 [Containerize with Docker](#42-containerize-with-docker)  
+   - 4.3 [Provision PVC & Headless Service](#43-provision-pvc--headless-service)  
+   - 4.4 [Deploy StatefulSet & NodePort Service](#44-deploy-statefulset--nodeport-service)  
+   - 4.5 [Smoke-Test & Scale](#45-smoke%E2%80%91test--scale)  
    - 4.6 [Clean Up](#46-clean-up)  
-5. [Lab 2: Stateful FastAPI App](#lab-2-stateful-fastapi-app)  
-   - 5.1 [Create & Test Locally](#51-create--test-locally)  
-   - 5.2 [Dockerize](#52-dockerize)  
-   - 5.3 [PVC & Headless Service](#53-pvc--headless-service)  
-   - 5.4 [StatefulSet & NodePort Service](#54-statefulset--nodeport-service)  
-   - 5.5 [Smoke-Test & Scale](#55-smoke-test--scale)  
-   - 5.6 [Clean Up](#56-clean-up)  
-6. [🛠 Common Pitfalls](#-common-pitfalls)  
-7. [🔮 Next Steps](#-next-steps)  
+5. [Common Pitfalls](#-common-pitfalls)  
+6. [Next Steps](#-next-steps)
 
 ---
 
-## Demo Preview
+## 👀 Demo Preview
 
-![Stateless Lab](./assets/lab1-demo.png)  
-*Stateless FastAPI responding through NodePort*
-
-![Stateful Lab](./assets/lab2-demo.png)  
-*Stateful FastAPI persisting data via PVC*
+![Stateful Workflow](./assets/stateful-demo.gif)  
+_Stateful pods each with their own PVC, serving `/save` & `/read`._
 
 ---
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-| Tool / Setup                     | Why?                                              |
-| -------------------------------- | ------------------------------------------------- |
-| **Python 3.8+**                  | Local FastAPI dev & requirements generation      |
-| **Docker**                       | Build & run container images                     |
-| **Minikube**                     | Local Kubernetes cluster                         |
-| **kubectl**                      | CLI for interacting with Kubernetes              |
-| **VS Code / Any editor**         | Edit code & YAML                                 |
-| **Basic CLI skills**             | Navigate filesystem & run commands               |
-| **Internet**                     | Pull Docker base images & Python packages        |
-
-💡 **OS**: Linux, macOS or Windows 10/11 (with WSL2)
+- **Python 3.11+**  
+- **Docker Desktop** (WSL2 on Windows) or Docker CE on Linux/macOS  
+- **Minikube v1.36+**  
+- **kubectl** (match your Minikube version)  
+- A code editor (VS Code, PyCharm…)  
+- Basic CLI skills (bash / PowerShell)
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
-# Clone repo
-git clone https://github.com/<your-user>/fastapi-k8s-labs.git
-cd fastapi-k8s-labs
+# 1. Clone
+git clone https://github.com/<you>/fastapi-k8s-stateful.git
+cd fastapi-k8s-stateful
 
-# Lab 1 ▶️
-cd fastapi-k8s-lab
-# follow steps in README under "Lab 1"
+# 2. Build & Push to Minikube’s Docker
+minikube start --driver=docker
+minikube docker-env --shell bash | source /dev/stdin
+docker build -t fastapi-stateful .
 
-# Lab 2 ▶️
-cd ../fastapi-stateful-k8s
-# follow steps in README under "Lab 2"
+# 3. Apply Kubernetes Manifests
+kubectl apply -f pvc.yaml
+kubectl apply -f headless-service.yaml
+kubectl apply -f statefulset.yaml
+kubectl apply -f nodeport-service.yaml
+
+# 4. Verify
+kubectl get pvc,pods,svc
+
+# 5. Access & Test
+URL=$(minikube service fastapi-access --url)
+curl -X POST $URL/save -d "hello from pod"
+curl $URL/read
+
+# 6. Cleanup
+kubectl delete svc,statefulset,pvc --all
+minikube stop
